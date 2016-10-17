@@ -18,14 +18,12 @@ namespace ConsoleApplication1
 
             List<Employee> employee = new List<Employee>();
 
-            ReadFile();
-            
+
             if (File.Exists(fileName))
             {
-                
+                readFile(fileName, employee);
             }
-            else
-            {
+            
                 bool keeplooping = true;
 
                 while (keeplooping)
@@ -79,12 +77,9 @@ namespace ConsoleApplication1
                     Console.WriteLine("Hit any key to continue.");
                     Console.ReadKey();
                 }
-             
+
             }
-        }
-
-
-
+        
 
         #region methods
 
@@ -173,8 +168,7 @@ namespace ConsoleApplication1
             {
                 if (a.getTermDate != DateTime.MinValue)
                 {
-
-                    Console.WriteLine(a.GetEmployeeName + " , " + a.getPayRate);
+                    Console.WriteLine(a.GetEmployeeName);
                 }
             }
         }
@@ -191,10 +185,10 @@ namespace ConsoleApplication1
                 foreach (Employee c in a)
                 {
                     writer.WriteStartElement("Employee");
- 
-                    writer.WriteStartElement("Id", c.GetEmployeeId.ToString());
-                    writer.WriteStartElement("Name", c.GetEmployeeName.ToString());
-                    writer.WriteStartElement("PayRate", c.getPayRate.ToString());
+
+                    writer.WriteElementString("Id", c.GetEmployeeId.ToString());
+                    writer.WriteElementString("Name", c.GetEmployeeName.ToString());
+                    writer.WriteElementString("PayRate", c.getPayRate.ToString());
 
                     writer.WriteEndElement();
                 }
@@ -205,15 +199,52 @@ namespace ConsoleApplication1
             }
         }
 
-        public static void ReadFile()
+    
+        public static void readFile(string file, List<Employee> a)
         {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(file);
 
-            string fileName = "C:\\temp\\Employees.xml";
-            if (File.Exists(fileName))
+            XmlNode comNode = doc.DocumentElement.SelectSingleNode("/Company");
+
+            foreach (XmlNode child in comNode.ChildNodes)
             {
+                string empId = "";
+                string empName = "";
+                double empPayRate = 0;
+                DateTime q = DateTime.Now;
 
-            }
+                foreach (XmlNode grandChild in child.ChildNodes)
+                {
+                    switch (grandChild.Name)
+                    {
+                        case "Id":
+                            {
+                                empId = grandChild.InnerText;
+                                break;
+                            }
+                        case "Name":
+                            {
+                                empName = grandChild.InnerText;
+                                break;
+                            }
+                        case "Payrate":
+                            {
+                                empPayRate = Convert.ToDouble(grandChild.InnerText);
+                                break;
+                            }
+
+                        default:
+                            {
+                                break;
+                            }
+                    }                   
+                }
+                Employee emp = new Employee(empId, empName, empPayRate, q);
+                a.Add(emp);
+            }           
         }
+        
     }
 }
 
